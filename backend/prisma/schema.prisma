@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Plant {
+  id          Int          @id @default(autoincrement())
+  name        String       @unique
+  clientTypes ClientType[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model ClientType {
+  id            Int            @id @default(autoincrement())
+  name          String
+  basePrice     Float
+  priceCurrency String         @default("USD")
+  plantId       Int
+  plant         Plant          @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  clients       Client[]
+  margins       MarginConfig[] @relation("ClientTypeMargins")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([name, plantId])
+}
+
+model Client {
+  id           Int            @id @default(autoincrement())
+  name         String
+  clientTypeId Int
+  clientType   ClientType     @relation(fields: [clientTypeId], references: [id], onDelete: Cascade)
+  linkType     String         @default("STANDARD")
+  margins      MarginConfig[] @relation("ClientMargins")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@unique([name, clientTypeId])
+}
+
+model MarginConfig {
+  id            Int         @id @default(autoincrement())
+  volumeRange   String      // e.g. "1T", "3T", "5T", "10T", "20T"
+  marginPercent Float
+  clientTypeId  Int?
+  clientType    ClientType? @relation("ClientTypeMargins", fields: [clientTypeId], references: [id], onDelete: Cascade)
+  clientId      Int?
+  client        Client?     @relation("ClientMargins", fields: [clientId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([volumeRange, clientTypeId])
+  @@unique([volumeRange, clientId])
+}
