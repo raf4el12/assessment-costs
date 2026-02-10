@@ -126,7 +126,6 @@ export function MarginTable() {
             </table>
           </div>
 
-          {/* Legend */}
           <div className="flex items-center gap-6 mt-3 px-1">
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               <span className="inline-block w-3 h-3 rounded bg-slate-50 border border-gray-300" />
