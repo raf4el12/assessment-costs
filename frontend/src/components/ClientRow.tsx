@@ -8,14 +8,12 @@ interface ClientRowProps {
 }
 
 export function ClientRow({ client, volumeRanges, onMarginChange }: ClientRowProps) {
-  // Index effectiveMargins by volumeRange for O(1) lookup
   const marginMap = new Map(
     client.effectiveMargins.map((em) => [em.volumeRange, em])
   );
 
   return (
     <tr className="hover:bg-gray-50/50 transition-colors">
-      {/* Client name - indented */}
       <td className="border border-gray-200 px-4 py-2.5 pl-10">
         <div className="flex items-center gap-2">
           <span className="text-gray-400 text-xs">└</span>
@@ -26,12 +24,10 @@ export function ClientRow({ client, volumeRanges, onMarginChange }: ClientRowPro
         </div>
       </td>
 
-      {/* Base price - empty for clients */}
       <td className="border border-gray-200 px-3 py-2.5 text-center text-sm text-gray-300">
         —
       </td>
 
-      {/* Margin cells */}
       {volumeRanges.map((range) => {
         const em = marginMap.get(range);
         return (

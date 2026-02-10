@@ -1,6 +1,6 @@
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 
 function cn(...inputs: Parameters<typeof clsx>) {
   return twMerge(clsx(inputs));
@@ -14,25 +14,19 @@ interface MarginCellProps {
 }
 
 export function MarginCell({ value, isAlert, isOverride, onChange }: MarginCellProps) {
-  const [localValue, setLocalValue] = useState(String(value));
-  const [isFocused, setIsFocused] = useState(false);
+  const [editValue, setEditValue] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Sync external value changes when not editing
-  useEffect(() => {
-    if (!isFocused) {
-      setLocalValue(String(value));
-    }
-  }, [value, isFocused]);
+  const isEditing = editValue !== null;
 
   const commit = () => {
-    const parsed = parseFloat(localValue);
-    if (!isNaN(parsed) && parsed !== value) {
-      onChange(parsed);
-    } else {
-      setLocalValue(String(value));
+    if (editValue !== null) {
+      const parsed = parseFloat(editValue);
+      if (!isNaN(parsed) && parsed !== value) {
+        onChange(parsed);
+      }
     }
-    setIsFocused(false);
+    setEditValue(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -40,7 +34,7 @@ export function MarginCell({ value, isAlert, isOverride, onChange }: MarginCellP
       inputRef.current?.blur();
     }
     if (e.key === "Escape") {
-      setLocalValue(String(value));
+      setEditValue(null);
       inputRef.current?.blur();
     }
   };
@@ -58,12 +52,9 @@ export function MarginCell({ value, isAlert, isOverride, onChange }: MarginCellP
           ref={inputRef}
           type="text"
           inputMode="decimal"
-          value={isFocused ? localValue : `${value}%`}
-          onChange={(e) => setLocalValue(e.target.value)}
-          onFocus={() => {
-            setIsFocused(true);
-            setLocalValue(String(value));
-          }}
+          value={isEditing ? editValue : `${value}%`}
+          onChange={(e) => setEditValue(e.target.value)}
+          onFocus={() => setEditValue(String(value))}
           onBlur={commit}
           onKeyDown={handleKeyDown}
           className={cn(
@@ -76,12 +67,10 @@ export function MarginCell({ value, isAlert, isOverride, onChange }: MarginCellP
           )}
         />
 
-        {/* Override indicator dot */}
         {isOverride && (
           <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-amber-400" />
         )}
 
-        {/* Alert tooltip */}
         {isAlert && (
           <div
             className={cn(

@@ -11,16 +11,13 @@ interface ClientTypeRowProps {
 export function ClientTypeRow({ clientType, volumeRanges, onMarginChange }: ClientTypeRowProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
-  // Index default margins by volumeRange
   const defaultMarginMap = new Map(
     clientType.margins.map((m) => [m.volumeRange, m.marginPercent])
   );
 
   return (
     <>
-      {/* ClientType header row */}
       <tr className="bg-slate-100 hover:bg-slate-200/70 transition-colors">
-        {/* Name + expand toggle */}
         <td className="border border-gray-200 px-4 py-2.5">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
@@ -43,8 +40,6 @@ export function ClientTypeRow({ clientType, volumeRanges, onMarginChange }: Clie
             </span>
           </button>
         </td>
-
-        {/* Base price */}
         <td className="border border-gray-200 px-3 py-2.5 text-center">
           <span className="text-sm font-medium text-gray-700">
             {clientType.priceCurrency} {clientType.basePrice.toLocaleString()}

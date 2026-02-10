@@ -45,12 +45,10 @@ export const marginResolvers = {
     ) => {
       const { clientId, volumeRange, marginPercent } = input;
 
-      // Verify the client exists
       const client = await prisma.client.findUniqueOrThrow({
         where: { id: clientId },
       });
 
-      // Upsert: update if exists, create if not
       const existing = await prisma.marginConfig.findFirst({
         where: { clientId, volumeRange },
       });
@@ -73,30 +71,24 @@ export const marginResolvers = {
     },
   },
 
-  // Field-level resolver: calculates effective margins for a Client
   Client: {
     effectiveMargins: async (parent: { id: number; clientTypeId: number }) => {
-      // 1. Get the ClientType default margins
       const clientTypeMargins = await prisma.marginConfig.findMany({
         where: { clientTypeId: parent.clientTypeId, clientId: null },
       });
 
-      // 2. Get the Client's own overrides
       const clientMargins = await prisma.marginConfig.findMany({
         where: { clientId: parent.id },
       });
 
-      // Index overrides by volumeRange for O(1) lookup
       const overrideMap = new Map(
         clientMargins.map((m) => [m.volumeRange, m.marginPercent])
       );
 
-      // Index defaults by volumeRange
       const defaultMap = new Map(
         clientTypeMargins.map((m) => [m.volumeRange, m.marginPercent])
       );
 
-      // 3. Iterate fixed ranges, pick override or default
       const effectiveMargins: EffectiveMargin[] = VOLUME_RANGES.map((range) => {
         const hasOverride = overrideMap.has(range);
         const marginPercent = hasOverride
